@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗡️ Prophet Muhammad RPG Quest - Week 1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-header {
+            text-align: center;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 3px solid #f39c12;
+            box-shadow: 0 0 30px rgba(243, 156, 18, 0.3);
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+        }
+
+        .character-panel {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(52, 73, 94, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+
+        .character-info {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border: 3px solid #f39c12;
+            margin: 0 auto 10px;
+        }
+
+        .stat-bar {
+            background: rgba(149, 165, 166, 0.3);
+            border-radius: 10px;
+            height: 20px;
+            margin: 5px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
+        }
+
+        .health-fill { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+        .exp-fill { background: linear-gradient(45deg, #f39c12, #e67e22); }
+        .wisdom-fill { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+        .courage-fill { background: linear-gradient(45deg, #e67e22, #d35400); }
+
+        .inventory {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            background: rgba(44, 62, 80, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #34495e;
+        }
+
+        .inventory-slot {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #7f8c8d;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(52, 73, 94, 0.5);
+        }
+
+        .inventory-slot:hover {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+        }
+
+        .inventory-slot.filled {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            border-color: #27ae60;
+        }
+
+        .game-map {
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #3498db;
+            position: relative;
+        }
+
+        .map-title {
+            text-align: center;
+            font-size: 1.8em;
+            color: #f39c12;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .quest-path {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .quest-location {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .quest-location:hover {
+            transform: translateY(-5px);
+            border-color: #f39c12;
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
+        }
+
+        .quest-location.completed {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border-color: #27ae60;
+        }
+
+        .quest-location.active {
+            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+            border-color: #f39c12;
+            animation: pulse 2s infinite;
+        }
+
+        .quest-location.locked {
+            background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
+            border-color: #95a5a6;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(243, 156, 18, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(243, 156, 18, 0.8); }
+        }
+
+        .location-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .location-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+
+        .location-description {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            margin-bottom: 15px;
+        }
+
+        .location-rewards {
+            font-size: 0.8em;
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .battle-arena {
+            display: none;
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #e74c3c;
+        }
+
+        .battle-arena.active {
+            display: block;
+            animation: battleStart 1s ease;
+        }
+
+        @keyframes battleStart {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .enemy-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .enemy-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            margin: 0 auto 20px;
+            border: 4px solid #f39c12;
+            animation: enemyThreat 2s infinite;
+        }
+
+        @keyframes enemyThreat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .enemy-health-bar {
+            width: 300px;
+            height: 30px;
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: 15px;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 2px solid #e74c3c;
+        }
+
+        .enemy-health-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            width: 100%;
+            transition: width 1s ease;
+        }
+
+        .battle-question {
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px solid #3498db;
+        }
+
+        .question-text {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #ecf0f1;
+        }
+
+        .answer-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .answer-option {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            border: 2px solid #3498db;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .answer-option:hover {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .answer-option.correct {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border-color: #27ae60;
+        }
+
+        .answer-option.incorrect {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border-color: #e74c3c;
+        }
+
+        .combat-log {
+            background: rgba(44, 62, 80, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            margin: 20px 0;
+            border: 2px solid #7f8c8d;
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .log-player { background: rgba(52, 152, 219, 0.2); color: #3498db; }
+        .log-enemy { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+        .log-system { background: rgba(149, 165, 166, 0.2); color: #95a5a6; }
+
+        .victory-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+        }
+
+        .victory-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            border: 4px solid #d35400;
+            box-shadow: 0 0 50px rgba(243, 156, 18, 0.5);
+        }
+
+        .victory-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: victoryGlow 2s infinite;
+        }
+
+        @keyframes victoryGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+            50% { text-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+        }
+
+        .reward-list {
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            border: 2px solid transparent;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            border-color: #f39c12;
+        }
+
+        .action-btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .equipment-panel {
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #27ae60;
+        }
+
+        .equipment-slot {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(52, 73, 94, 0.5);
+            border-radius: 8px;
+            border: 1px solid #7f8c8d;
+        }
+
+        .equipment-slot.equipped {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+        }
+
+        .equipment-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+
+        .equipment-info {
+            flex: 1;
+        }
+
+        .equipment-name {
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .equipment-stats {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+
+        .turkish-help-box {
+            background: rgba(241, 196, 15, 0.2);
+            border: 2px solid #f1c40f;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #f39c12;
+        }
+
+        .help-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .character-panel {
+                flex-direction: column;
+            }
+            
+            .quest-path {
+                flex-direction: column;
+            }
+            
+            .quest-location {
+                min-width: 100%;
+            }
+            
+            .answer-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Stars Background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Turkish Help Counter -->
+    <div class="help-counter">
+        🆘 Turkish Help: <span id="helpCount">3</span>
+    </div>
+
+    <div class="container">
+        <!-- Game Header -->
+        <div class="game-header">
+            <h1 class="game-title">🗡️ PROPHET MUHAMMAD RPG QUEST</h1>
+            <p style="font-size: 1.2em;">⚔️ Week 1: The Rise of Al-Amin ⚔️</p>
+            <div class="turkish-help-box">
+                <strong>🇹🇷 RPG Oyunu:</strong> Karakterini güçlendir, düşmanları yen, hikayeyi keşfet! Her doğru cevap güç verir, her yanlış can kaybettirir. Hazır mısın kahraman?
+            </div>
+        </div>
+
+        <!-- Character Panel -->
+        <div class="character-panel">
+            <div class="character-info">
+                <div class="character-avatar" id="playerAvatar">🛡️</div>
+                <h3 style="text-align: center; color: #f39c12;">English Knight</h3>
+                <div style="text-align: center; color: #ecf0f1;">Level <span id="playerLevel">1</span></div>
+            </div>
+            
+            <div class="character-info" style="flex: 2;">
+                <div style="margin: 5px 0;">
+                    <span style="color: #e74c3c;">❤️ Health:</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill health-fill" id="healthBar" style="width: 100%;"></div>
+                    </div>
+                    <span id="healthText">100/100</span>
+                </div>
+                
+                <div style="margin: 5px 0;">
+                    <span style="color: #f39c12;">⭐ Experience:</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill exp-fill" id="expBar" style="width: 0%;"></div>
+                    </div>
+                    <span id="expText">0/100</span>
+                </div>
+                
+                <div style="margin: 5px 0;">
+                    <span style="color: #9b59b6;">🧠 Wisdom:</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill wisdom-fill" id="wisdomBar" style="width: 0%;"></div>
+                    </div>
+                    <span id="wisdomText">0/50</span>
+                </div>
+                
+                <div style="margin: 5px 0;">
+                    <span style="color: #e67e22;">💪 Courage:</span>
+                    <div class="stat-bar">
+                        <div class="stat-fill courage-fill" id="courageBar" style="width: 0%;"></div>
+                    </div>
+                    <span id="courageText">0/50</span>
+                </div>
+            </div>
+            
+            <div class="character-info">
+                <h4 style="text-align: center; color: #f39c12; margin-bottom: 10px;">📦 Inventory</h4>
+                <div class="inventory" id="inventory">
+                    <div class="inventory-slot" data-item="empty">📭</div>
+                    <div class="inventory-slot" data-item="empty">📭</div>
+                    <div class="inventory-slot" data-item="empty">📭</div>
+                    <div class="inventory-slot" data-item="empty">📭</div>
+                    <div class="inventory-slot" data-item="empty">📭</div>
+                    <div class="inventory-slot" data-item="empty">📭</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment Panel -->
+        <div class="equipment-panel">
+            <h3 style="color: #f39c12; margin-bottom: 15px;">⚔️ Equipment & Abilities</h3>
+            <div class="equipment-slot" id="weapon-slot">
+                <div class="equipment-icon">🗡️</div>
+                <div class="equipment-info">
+                    <div class="equipment-name">Rusty Sword</div>
+                    <div class="equipment-stats">Attack: +5 | "Basic weapon for beginners"</div>
+                </div>
+            </div>
+            <div class="equipment-slot" id="armor-slot">
+                <div class="equipment-icon">🛡️</div>
+                <div class="equipment-info">
+                    <div class="equipment-name">Leather Armor</div>
+                    <div class="equipment-stats">Defense: +3 | "Simple protection"</div>
+                </div>
+            </div>
+            <div class="equipment-slot" id="accessory-slot">
+                <div class="equipment-icon">📿</div>
+                <div class="equipment-info">
+                    <div class="equipment-name">Student's Amulet</div>
+                    <div class="equipment-stats">Wisdom: +2 | "Helps with learning"</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Map -->
+        <div class="game-map">
+            <h2 class="map-title">🗺️ ADVENTURE MAP - The Path of Al-Amin</h2>
+            <div class="quest-path">
+                <div class="quest-location active" onclick="startQuest('mecca')" id="location-mecca">
+                    <div class="location-icon">🕌</div>
+                    <div class="location-title">Mecca - The Beginning</div>
+                    <div class="location-description">Where the story begins. Face the Vocabulary Guardians and learn about Muhammad's early life.</div>
+                    <div class="location-rewards">🎁 Rewards: Orphan Gem, Trustworthy Badge, +20 EXP</div>
+                </div>
+                
+                <div class="quest-location locked" id="location-desert">
+                    <div class="location-icon">🏜️</div>
+                    <div class="location-title">Desert of Trials</div>
+                    <div class="location-description">Face the Bedouin Chief and learn survival skills in the harsh desert.</div>
+                    <div class="location-rewards">🎁 Rewards: Desert Wisdom, Merchant Skills, +30 EXP</div>
+                </div>
+                
+                <div class="quest-location locked" id="location-cave">
+                    <div class="location-icon">🕳️</div>
+                    <div class="location-title">Cave of Hira</div>
+                    <div class="location-description">The ultimate challenge! Face the Guardian of Revelation and unlock the secrets of the first message.</div>
+                    <div class="location-rewards">🎁 Rewards: Angel's Blessing, Revelation Power, +50 EXP</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Battle Arena -->
+        <div class="battle-arena" id="battleArena">
+            <div class="enemy-section">
+                <h2 style="color: #f39c12; margin-bottom: 20px;">⚔️ BATTLE ARENA</h2>
+                <div class="enemy-avatar" id="enemyAvatar">👹</div>
+                <h3 id="enemyName" style="color: #e74c3c; margin-bottom: 10px;">Vocabulary Guardian</h3>
+                <div class="enemy-health-bar">
+                    <div class="enemy-health-fill" id="enemyHealthBar"></div>
+                </div>
+                <p id="enemyHealthText" style="margin-top: 10px;">100/100 HP</p>
+            </div>
+
+            <div class="battle-question" id="battleQuestion">
+                <div class="question-text" id="questionText">
+                    The Vocabulary Guardian challenges you! Answer correctly to deal damage!
+                </div>
+                <div class="answer-options" id="answerOptions">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <div class="combat-log" id="combatLog">
+                <div class="log-entry log-system">🛡️ Battle begins! The Vocabulary Guardian appears!</div>
+                <div class="log-entry log-system">💡 Answer questions correctly to attack the enemy!</div>
+                <div class="log-entry log-system">⚠️ Wrong answers will cost you health!</div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="action-btn" onclick="useTurkishHelp()" id="turkishHelpBtn">🆘 Turkish Help (3 left)</button>
+                <button class="action-btn" onclick="retreatFromBattle()" style="background: linear-gradient(45deg, #e74c3c, #c0392b);">🏃 Retreat</button>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div class="victory-screen" id="victoryScreen">
+            <div class="victory-content">
+                <div class="victory-title">🏆 VICTORY!</div>
+                <div id="victoryMessage">You have defeated the enemy!</div>
+                <div class="reward-list" id="rewardList">
+                    <!-- Dynamic rewards -->
+                </div>
+                <button class="action-btn" onclick="closeVictory()">Continue Adventure</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            player: {
+                level: 1,
+                health: 100,
+                maxHealth: 100,
+                exp: 0,
+                expToNext: 100,
+                wisdom: 0,
+                courage: 0,
+                inventory: [],
+                equipment: {
+                    weapon: { name: "Rusty Sword", attack: 5, icon: "🗡️" },
+                    armor: { name: "Leather Armor", defense: 3, icon: "🛡️" },
+                    accessory: { name: "Student's Amulet", wisdom: 2, icon: "📿" }
+                }
+            },
+            currentLocation: 'mecca',
+            completedLocations: [],
+            turkishHelpCount: 3,
+            currentBattle: null,
+            vocabularyLearned: []
+        };
+
+        // Battle System
+        const enemies = {
+            vocabularyGuardian: {
+                name: "Vocabulary Guardian",
+                health: 100,
+                maxHealth: 100,
+                avatar: "📚",
+                questions: [
+                    {
+                        question: "What does 'ORPHAN' mean?",
+                        options: ["A rich person", "A child whose parents died", "A merchant", "A teacher"],
+                        correct: 1,
+                        damage: 25,
+                        reward: { item: "Orphan Gem", exp: 15, wisdom: 5 }
+                    },
+                    {
+                        question: "Why was Muhammad called 'Al-Amin'?",
+                        options: ["He was rich", "He was trustworthy", "He was strong", "He was young"],
+                        correct: 1,
+                        damage: 25,
+                        reward: { item: "Trustworthy Badge", exp: 20, courage: 5 }
+                    },
+                    {
+                        question: "What is a MERCHANT?",
+                        options: ["A person who buys and sells things", "A warrior", "A teacher", "A farmer"],
+                        correct: 0,
+                        damage: 25,
+                        reward: { item: "Merchant Scroll", exp: 15, wisdom: 3 }
+                    },
+                    {
+                        question: "Where did Muhammad go to think and pray?",
+                        options: ["The market", "A cave", "His house", "The desert"],
+                        correct: 1,
+                        damage: 25,
+                        reward: { item: "Cave Key", exp: 25, wisdom: 10 }
+                    }
+                ]
+            },
+            bedouinChief: {
+                name: "Bedouin Chief",
+                health: 150,
+                maxHealth: 150,
+                avatar: "🐪",
+                questions: [
+                    {
+                        question: "What is the DESERT?",
+                        options: ["A wet place", "Very dry land with little water", "A mountain", "A city"],
+                        correct: 1,
+                        damage: 30,
+                        reward: { item: "Desert Compass", exp: 20, courage: 8 }
+                    },
+                    {
+                        question: "Who are the BEDOUINS?",
+                        options: ["City people", "Arab people who live in desert", "Merchants only", "Farmers"],
+                        correct: 1,
+                        damage: 30,
+                        reward: { item: "Camel Saddle", exp: 25, wisdom: 7 }
+                    }
+                ]
+            },
+            revelationGuardian: {
+                name: "Guardian of Revelation",
+                health: 200,
+                maxHealth: 200,
+                avatar: "👼",
+                questions: [
+                    {
+                        question: "What is a REVELATION?",
+                        options: ["A book", "A message from Allah to humans", "A dream", "A story"],
+                        correct: 1,
+                        damage: 40,
+                        reward: { item: "Angel's Feather", exp: 30, wisdom: 15 }
+                    },
+                    {
+                        question: "Who brought the first revelation to Muhammad?",
+                        options: ["A human", "Angel Gabriel", "A bird", "His wife"],
+                        correct: 1,
+                        damage: 40,
+                        reward: { item: "Divine Light", exp: 35, courage: 15 }
+                    },
+                    {
+                        question: "How did Muhammad feel when the angel first came?",
+                        options: ["Happy", "Frightened", "Angry", "Sleepy"],
+                        correct: 1,
+                        damage: 40,
+                        reward: { item: "Courage Crystal", exp: 40, courage: 20 }
+                    }
+                ]
+            }
+        };
+
+        // Initialize game
+        function initGame() {
+            createStars();
+            updateUI();
+            document.getElementById('helpCount').textContent = gameState.turkishHelpCount;
+        }
+
+        // Create animated stars background
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = Math.random() * 3 + 1 + 'px';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Update UI elements
+        function updateUI() {
+            const player = gameState.player;
+            
+            // Update stats
+            document.getElementById('playerLevel').textContent = player.level;
+            document.getElementById('healthText').textContent = `${player.health}/${player.maxHealth}`;
+            document.getElementById('expText').textContent = `${player.exp}/${player.expToNext}`;
+            document.getElementById('wisdomText').textContent = `${player.wisdom}/50`;
+            document.getElementById('courageText').textContent = `${player.courage}/50`;
+            
+            // Update bars
+            document.getElementById('healthBar').style.width = (player.health / player.maxHealth * 100) + '%';
+            document.getElementById('expBar').style.width = (player.exp / player.expToNext * 100) + '%';
+            document.getElementById('wisdomBar').style.width = (player.wisdom / 50 * 100) + '%';
+            document.getElementById('courageBar').style.width = (player.courage / 50 * 100) + '%';
+            
+            // Update help counter
+            document.getElementById('helpCount').textContent = gameState.turkishHelpCount;
+            document.getElementById('turkishHelpBtn').textContent = `🆘 Turkish Help (${gameState.turkishHelpCount} left)`;
+            
+            // Update inventory
+            updateInventory();
+            
+            // Update locations
+            updateLocationStates();
+        }
+
+        // Update inventory display
+        function updateInventory() {
+            const inventorySlots = document.querySelectorAll('.inventory-slot');
+            inventorySlots.forEach((slot, index) => {
+                if (gameState.player.inventory[index]) {
+                    const item = gameState.player.inventory[index];
+                    slot.textContent = getItemIcon(item);
+                    slot.classList.add('filled');
+                    slot.setAttribute('title', item);
+                } else {
+                    slot.textContent = '📭';
+                    slot.classList.remove('filled');
+                    slot.removeAttribute('title');
+                }
+            });
+        }
+
+        // Get item icon
+        function getItemIcon(itemName) {
+            const icons = {
+                "Orphan Gem": "💎",
+                "Trustworthy Badge": "🛡️",
+                "Merchant Scroll": "📜",
+                "Cave Key": "🗝️",
+                "Desert Compass": "🧭",
+                "Camel Saddle": "🐪",
+                "Angel's Feather": "🪶",
+                "Divine Light": "✨",
+                "Courage Crystal": "💎"
+            };
+            return icons[itemName] || "📦";
+        }
+
+        // Update location states
+        function updateLocationStates() {
+            const locations = ['mecca', 'desert', 'cave'];
+            
+            locations.forEach((location, index) => {
+                const element = document.getElementById(`location-${location}`);
+                
+                if (gameState.completedLocations.includes(location)) {
+                    element.className = 'quest-location completed';
+                } else if (location === gameState.currentLocation) {
+                    element.className = 'quest-location active';
+                } else if (index === 0 || gameState.completedLocations.includes(locations[index - 1])) {
+                    element.className = 'quest-location';
+                } else {
+                    element.className = 'quest-location locked';
+                }
+            });
+        }
+
+        // Start quest
+        function startQuest(location) {
+            const element = document.getElementById(`location-${location}`);
+            
+            if (element.classList.contains('locked')) {
+                addCombatLog("⚠️ This location is locked! Complete previous quests first.", "system");
+                return;
+            }
+            
+            if (element.classList.contains('completed')) {
+                addCombatLog("✅ You have already completed this quest!", "system");
+                return;
+            }
+            
+            gameState.currentLocation = location;
+            
+            // Start appropriate battle
+            switch(location) {
+                case 'mecca':
+                    startBattle('vocabularyGuardian');
+                    break;
+                case 'desert':
+                    startBattle('bedouinChief');
+                    break;
+                case 'cave':
+                    startBattle('revelationGuardian');
+                    break;
+            }
+        }
+
+        // Start battle
+        function startBattle(enemyType) {
+            gameState.currentBattle = {
+                enemy: JSON.parse(JSON.stringify(enemies[enemyType])),
+                currentQuestionIndex: 0,
+                questionsAnswered: 0
+            };
+            
+            const battle = gameState.currentBattle;
+            const enemy = battle.enemy;
+            
+            // Update enemy display
+            document.getElementById('enemyAvatar').textContent = enemy.avatar;
+            document.getElementById('enemyName').textContent = enemy.name;
+            document.getElementById('enemyHealthText').textContent = `${enemy.health}/${enemy.maxHealth} HP`;
+            document.getElementById('enemyHealthBar').style.width = '100%';
+            
+            // Clear combat log
+            document.getElementById('combatLog').innerHTML = '';
+            addCombatLog(`⚔️ A wild ${enemy.name} appears!`, "system");
+            addCombatLog("💡 Answer questions correctly to deal damage!", "system");
+            
+            // Show battle arena
+            document.getElementById('battleArena').classList.add('active');
+            
+            // Load first question
+            loadQuestion();
+        }
+
+        // Load question
+        function loadQuestion() {
+            const battle = gameState.currentBattle;
+            const question = battle.enemy.questions[battle.currentQuestionIndex];
+            
+            if (!question) {
+                // No more questions, enemy defeated
+                defeatEnemy();
+                return;
+            }
+            
+            document.getElementById('questionText').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('answerOptions');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('div');
+                button.className = 'answer-option';
+                button.textContent = option;
+                button.onclick = () => answerQuestion(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Answer question
+        function answerQuestion(selectedIndex) {
+            const battle = gameState.currentBattle;
+            const question = battle.enemy.questions[battle.currentQuestionIndex];
+            const isCorrect = selectedIndex === question.correct;
+            
+            // Disable all options
+            const options = document.querySelectorAll('.answer-option');
+            options.forEach((option, index) => {
+                option.onclick = null;
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (isCorrect) {
+                // Deal damage to enemy
+                battle.enemy.health -= question.damage;
+                battle.enemy.health = Math.max(0, battle.enemy.health);
+                
+                // Give rewards
+                giveReward(question.reward);
+                
+                addCombatLog(`⚔️ Correct! You deal ${question.damage} damage!`, "player");
+                addCombatLog(`🎁 You gained: ${question.reward.item}, +${question.reward.exp} EXP`, "system");
+                
+                // Update enemy health
+                const healthPercentage = (battle.enemy.health / battle.enemy.maxHealth) * 100;
+                document.getElementById('enemyHealthBar').style.width = healthPercentage + '%';
+                document.getElementById('enemyHealthText').textContent = `${battle.enemy.health}/${battle.enemy.maxHealth} HP`;
+                
+                // Check if enemy is defeated
+                if (battle.enemy.health <= 0) {
+                    setTimeout(() => defeatEnemy(), 1500);
+                    return;
+                }
+            } else {
+                // Player takes damage
+                const damage = 15;
+                gameState.player.health -= damage;
+                gameState.player.health = Math.max(0, gameState.player.health);
+                
+                addCombatLog(`💥 Wrong answer! You take ${damage} damage!`, "enemy");
+                
+                // Check if player is defeated
+                if (gameState.player.health <= 0) {
+                    setTimeout(() => playerDefeated(), 1500);
+                    return;
+                }
+            }
+            
+            // Move to next question
+            battle.currentQuestionIndex++;
+            battle.questionsAnswered++;
+            
+            updateUI();
+            
+            // Load next question after delay
+            setTimeout(() => {
+                loadQuestion();
+            }, 2000);
+        }
+
+        // Give reward
+        function giveReward(reward) {
+            // Add item to inventory
+            if (gameState.player.inventory.length < 6) {
+                gameState.player.inventory.push(reward.item);
+            }
+            
+            // Add experience
+            gameState.player.exp += reward.exp;
+            
+            // Add wisdom
+            if (reward.wisdom) {
+                gameState.player.wisdom += reward.wisdom;
+                gameState.player.wisdom = Math.min(50, gameState.player.wisdom);
+            }
+            
+            // Add courage
+            if (reward.courage) {
+                gameState.player.courage += reward.courage;
+                gameState.player.courage = Math.min(50, gameState.player.courage);
+            }
+            
+            // Check for level up
+            checkLevelUp();
+        }
+
+        // Check level up
+        function checkLevelUp() {
+            while (gameState.player.exp >= gameState.player.expToNext) {
+                gameState.player.exp -= gameState.player.expToNext;
+                gameState.player.level++;
+                gameState.player.maxHealth += 20;
+                gameState.player.health = gameState.player.maxHealth; // Full heal on level up
+                gameState.player.expToNext = Math.floor(gameState.player.expToNext * 1.5);
+                
+                addCombatLog(`🎉 LEVEL UP! You are now level ${gameState.player.level}!`, "system");
+                
+                // Upgrade equipment
+                upgradeEquipment();
+            }
+        }
+
+        // Upgrade equipment
+        function upgradeEquipment() {
+            const level = gameState.player.level;
+            const equipment = gameState.player.equipment;
+            
+            if (level === 2) {
+                equipment.weapon = { name: "Iron Sword", attack: 10, icon: "⚔️" };
+                addCombatLog("🎁 Equipment upgraded: Iron Sword!", "system");
+            } else if (level === 3) {
+                equipment.armor = { name: "Chain Mail", defense: 8, icon: "🛡️" };
+                addCombatLog("🎁 Equipment upgraded: Chain Mail!", "system");
+            } else if (level === 4) {
+                equipment.accessory = { name: "Scholar's Ring", wisdom: 10, icon: "💍" };
+                addCombatLog("🎁 Equipment upgraded: Scholar's Ring!", "system");
+            }
+            
+            updateEquipmentDisplay();
+        }
+
+        // Update equipment display
+        function updateEquipmentDisplay() {
+            const equipment = gameState.player.equipment;
+            
+            document.querySelector('#weapon-slot .equipment-name').textContent = equipment.weapon.name;
+            document.querySelector('#weapon-slot .equipment-stats').textContent = `Attack: +${equipment.weapon.attack}`;
+            document.querySelector('#weapon-slot .equipment-icon').textContent = equipment.weapon.icon;
+            
+            document.querySelector('#armor-slot .equipment-name').textContent = equipment.armor.name;
+            document.querySelector('#armor-slot .equipment-stats').textContent = `Defense: +${equipment.armor.defense}`;
+            document.querySelector('#armor-slot .equipment-icon').textContent = equipment.armor.icon;
+            
+            document.querySelector('#accessory-slot .equipment-name').textContent = equipment.accessory.name;
+            document.querySelector('#accessory-slot .equipment-stats').textContent = `Wisdom: +${equipment.accessory.wisdom}`;
+            document.querySelector('#accessory-slot .equipment-icon').textContent = equipment.accessory.icon;
+        }
+
+        // Defeat enemy
+        function defeatEnemy() {
+            const enemy = gameState.currentBattle.enemy;
+            addCombatLog(`🏆 You have defeated the ${enemy.name}!`, "system");
+            
+            // Mark location as completed
+            gameState.completedLocations.push(gameState.currentLocation);
+            
+            // Unlock next location
+            const locations = ['mecca', 'desert', 'cave'];
+            const currentIndex = locations.indexOf(gameState.currentLocation);
+            if (currentIndex < locations.length - 1) {
+                const nextLocation = locations[currentIndex + 1];
+                addCombatLog(`🗝️ ${nextLocation.charAt(0).toUpperCase() + nextLocation.slice(1)} is now unlocked!`, "system");
+            }
+            
+            // Show victory screen
+            showVictoryScreen();
+        }
+
+        // Show victory screen
+        function showVictoryScreen() {
+            const enemy = gameState.currentBattle.enemy;
+            
+            document.getElementById('victoryMessage').textContent = `You have defeated the ${enemy.name}!`;
+            
+            // Calculate total rewards
+            let totalExp = 0;
+            let items = [];
+            
+            enemy.questions.forEach(q => {
+                totalExp += q.reward.exp;
+                items.push(q.reward.item);
+            });
+            
+            const rewardList = document.getElementById('rewardList');
+            rewardList.innerHTML = `
+                <div>🎁 Total EXP Gained: +${totalExp}</div>
+                <div>📦 Items Collected: ${items.join(', ')}</div>
+                <div>🎯 Location Completed: ${gameState.currentLocation.charAt(0).toUpperCase() + gameState.currentLocation.slice(1)}</div>
+            `;
+            
+            document.getElementById('victoryScreen').style.display = 'block';
+        }
+
+        // Close victory screen
+        function closeVictory() {
+            document.getElementById('victoryScreen').style.display = 'none';
+            document.getElementById('battleArena').classList.remove('active');
+            gameState.currentBattle = null;
+            updateUI();
+        }
+
+        // Player defeated
+        function playerDefeated() {
+            addCombatLog("💀 You have been defeated!", "system");
+            addCombatLog("🏥 Returning to full health...", "system");
+            
+            // Heal player but lose some exp
+            gameState.player.health = gameState.player.maxHealth;
+            gameState.player.exp = Math.max(0, gameState.player.exp - 10);
+            
+            setTimeout(() => {
+                document.getElementById('battleArena').classList.remove('active');
+                gameState.currentBattle = null;
+                updateUI();
+            }, 2000);
+        }
+
+        // Use Turkish help
+        function useTurkishHelp() {
+            if (gameState.turkishHelpCount <= 0) {
+                addCombatLog("❌ No Turkish help remaining!", "system");
+                return;
+            }
+            
+            if (!gameState.currentBattle) {
+                addCombatLog("❌ No active battle to get help for!", "system");
+                return;
+            }
+            
+            gameState.turkishHelpCount--;
+            
+            const battle = gameState.currentBattle;
+            const question = battle.enemy.questions[battle.currentQuestionIndex];
+            
+            // Show Turkish hint
+            const hints = {
+                "What does 'ORPHAN' mean?": "🇹🇷 İpucu: Anne babası ölmüş çocuk",
+                "Why was Muhammad called 'Al-Amin'?": "🇹🇷 İpucu: Güvenilir olduğu için",
+                "What is a MERCHANT?": "🇹🇷 İpucu: Alış veriş yapan kişi - tüccar",
+                "Where did Muhammad go to think and pray?": "🇹🇷 İpucu: Hira mağarası",
+                "What is the DESERT?": "🇹🇷 İpucu: Çok kuru, susuz yer - çöl",
+                "Who are the BEDOUINS?": "🇹🇷 İpucu: Çölde yaşayan göçebe Araplar",
+                "What is a REVELATION?": "🇹🇷 İpucu: Allah'tan gelen mesaj - vahiy",
+                "Who brought the first revelation to Muhammad?": "🇹🇷 İpucu: Cebrail melek",
+                "How did Muhammad feel when the angel first came?": "🇹🇷 İpucu: Korktu, ama sonra rahatladı"
+            };
+            
+            const hint = hints[question.question] || "🇹🇷 İpucu mevcut değil";
+            addCombatLog(hint, "system");
+            
+            updateUI();
+        }
+
+        // Retreat from battle
+        function retreatFromBattle() {
+            addCombatLog("🏃 You retreat from battle!", "system");
+            document.getElementById('battleArena').classList.remove('active');
+            gameState.currentBattle = null;
+        }
+
+        // Add combat log entry
+        function addCombatLog(message, type) {
+            const log = document.getElementById('combatLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Initialize game when page loads
+        window.onload = initGame;
+    </script>
+</body>
+</html>

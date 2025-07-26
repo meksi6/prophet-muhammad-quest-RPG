@@ -905,12 +905,16 @@
                 
                 if (gameState.completedLocations.includes(location)) {
                     element.className = 'quest-location completed';
-                } else if (location === gameState.currentLocation) {
+                    element.onclick = () => startQuest(location); // Allow replaying
+                } else if (location === 'mecca' || (index > 0 && gameState.completedLocations.includes(locations[index - 1]))) {
+                    // Mecca is always available, or previous location is completed
                     element.className = 'quest-location active';
-                } else if (index === 0 || gameState.completedLocations.includes(locations[index - 1])) {
-                    element.className = 'quest-location';
+                    element.onclick = () => startQuest(location);
                 } else {
                     element.className = 'quest-location locked';
+                    element.onclick = () => {
+                        addCombatLog("⚠️ This location is locked! Complete previous quests first.", "system");
+                    };
                 }
             });
         }
@@ -924,9 +928,10 @@
                 return;
             }
             
+            // Allow replaying completed quests
             if (element.classList.contains('completed')) {
-                addCombatLog("✅ You have already completed this quest!", "system");
-                return;
+                const replay = confirm("You have already completed this quest. Do you want to replay it?");
+                if (!replay) return;
             }
             
             gameState.currentLocation = location;
@@ -1148,7 +1153,13 @@
             addCombatLog(`🏆 You have defeated the ${enemy.name}!`, "system");
             
             // Mark location as completed
-            gameState.completedLocations.push(gameState.currentLocation);
+            if (!gameState.completedLocations.includes(gameState.currentLocation)) {
+                gameState.completedLocations.push(gameState.currentLocation);
+            }
+            
+            // Debug log
+            console.log("Completed locations:", gameState.completedLocations);
+            console.log("Current location:", gameState.currentLocation);
             
             // Unlock next location
             const locations = ['mecca', 'desert', 'cave'];
@@ -1157,6 +1168,11 @@
                 const nextLocation = locations[currentIndex + 1];
                 addCombatLog(`🗝️ ${nextLocation.charAt(0).toUpperCase() + nextLocation.slice(1)} is now unlocked!`, "system");
             }
+            
+            // Force update UI
+            setTimeout(() => {
+                updateUI();
+            }, 100);
             
             // Show victory screen
             showVictoryScreen();
